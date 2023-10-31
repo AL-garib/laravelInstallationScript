@@ -1,6 +1,14 @@
 #!/bin/bash
 
 GIT_URL=$1
+
+#config DATABASE
+MYSQL_DATABASE=$2
+MYSQL_USERNAME=$3
+MYSQL_PASSWORD=$4
+
+
+
 PROJECT_DIR="/var/www/html/"
 
 cd $PROJECT_DIR
@@ -16,14 +24,17 @@ else
         echo "is installed ${$PATH_PROJECT}"
 fi
 
+
+
 cd $PATH_PROJECT
+
+
+composer_v=$(sed -n '/"php":/s/.*"\(.*\)\.\(.*\)".*/\1/p' composer.json | sed 's/\^//;s/,$//')
+
+php_v=$(php -v | sed -n 's/PHP \([^ ]*\)[^A-Za-z].-.*/\1/p')
 
 npm install
 npm run dev
-
-composer_v=$(sed -n '11s/.*"\^\(.*\)\.5".*/\1/p' composer.json)
-
-php_v=$(php -v | sed -n 's/PHP \([^ ]*\)[^A-Za-z].-.*/\1/p')
 
 echo $php_v
 
@@ -38,7 +49,9 @@ fi
 
 if [ ! -f ".env" ]; then
         cp .env.example .env
-        sed -i "/DB_PASSWORD/c\DB_PASSWORD=root" $PATH_PROJECT"/.env"
+        sed -i "/DB_DATABASE/c\DB_DATABASE=$MYSQL_DATABASE" $PATH_PROJECT"/.env"
+        sed -i "/DB_USERNAME/c\DB_USERNAME=$MYSQL_USERNAME" $PATH_PROJECT"/.env"
+        sed -i "/DB_PASSWORD/c\DB_PASSWORD=$MYSQL_PASSWORD" $PATH_PROJECT"/.env"
         php artisan key:generate
 fi
 
